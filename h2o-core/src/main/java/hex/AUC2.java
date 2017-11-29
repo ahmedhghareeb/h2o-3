@@ -1,6 +1,5 @@
 package hex;
 
-import java.util.Arrays;
 import water.Iced;
 import water.MRTask;
 import water.exceptions.H2OIllegalArgumentException;
@@ -8,6 +7,8 @@ import water.fvec.Chunk;
 import water.fvec.Vec;
 import water.util.fp.Function;
 import water.util.fp.Functions;
+
+import java.util.Arrays;
 
 import static hex.AUC2.ThresholdCriterion.precision;
 import static hex.AUC2.ThresholdCriterion.recall;
@@ -324,11 +325,23 @@ public class AUC2 extends Iced {
       }
       _n += bldr._n;
       //assert sorted();
+      int old_n = _n;   // store the total number of bins.
 
       // Merge elements with least squared-error increase until we get fewer
       // than _nBins and no duplicates.  May require many merges.
       while( _n > _nBins || dups() ) 
-        mergeOneBin();
+        mergeOneBin();      // merge the bins and update the count _n but leave the old values there
+
+      // let me just add this clean up to zero out arrays parts not used.
+      if (old_n > _n)
+        cleanUps(old_n);
+    }
+
+    private void cleanUps(int old_n) {
+      Arrays.fill(_ths, _n, old_n, 0.0);
+      Arrays.fill(_sqe, _n, old_n, 0.0);
+      Arrays.fill(_tps, _n, old_n, 0);
+      Arrays.fill(_fps, _n, old_n, 0);
     }
 
     private void mergeOneBin( ) {
